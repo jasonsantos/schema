@@ -100,6 +100,12 @@ global['Type'] = function(typeName)
 					field['.fieldSize'] = argument
 					return field
 				end;
+				['date'] = function()
+					print('Date argument')
+					local field = _(_(type, '.fields'), lastField)
+					field['.fieldSize'] = argument
+					return field
+				end;
 				['table'] = function()
 					print('Table argument')
 					local field = _(_(type, '.fields'), lastField)
