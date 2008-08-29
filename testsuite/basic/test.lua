@@ -5,28 +5,67 @@ require "schema"
 
 local allTypes = Schema 'Cli' {
 
-	 Type 'tipoDocumento'
-	 	. nome "Nome"
-	 	. descricao;
+	Data 'TipoDocumento' {
+	 	CPF = "Cadastro de Pessoa Fisica",
+	 	RG = { nome = "Identidadade", description="Registro Geral" },
+	};
 
-	 Type 'Cliente' {tableName='tbCliente', databaseName='teste'}
+	Data 'Estado' {
+		{id=1,name='Novo'}, 
+		{id=2,name='Criado'}, 
+		{id=3,name='Alterado'}
+	};
+	
+	Type 'Endereco'
+		. rua
+		. numero
+		. complemento
+		. bairro
+		. cidade
+		. cep
+
+	Type 'PessoaFisica'
 		. nome
 		. endereco
 		. telefone
-		. cep : Number(256)
-		. idade
+
+	Type 'Cliente' {tableName='tbCliente', databaseName='teste'}
+		. nome'Nome'{required=true}
+		. endereco
+		. telefone
+		. cep'clCep' : Number{size=256, required=true }
+		. idade 
 		. dataNascimento : Date('now')
 		. tipoDocumento : Reference('tipoDocumento');
+		. presidente : Reference('passoaFisica');
 		
-	 Type 'Assinatura'
+	Type 'Assinatura'
 	 	. tipo {
 	 		Type 'TipoAssinatura'
 	 			. nome
 	 			. descricao
 	 	}
 	}
+	
+	Validations {
+		'PessoaFisica' {
+			.idade = function(field, oldvalue, newvalue)
+				if (i< 17) then
+					field.entity.checked = false
+					return true, newvalue, {'asasa'}
+				end
+				return false, {'erroraasa'}, {'asasas'}
+				
+				return true, {}, {}
+			end
+		}
+	}
 
-
+	Indexes {
+		'standard' = Filterable {
+			fields = {'nome', 'cpf'}
+		}
+	}
 
 
 local newsTypes = Schema 'Newsletter' {
@@ -38,7 +77,7 @@ local newsTypes = Schema 'Newsletter' {
 		.periodicidade : Number()
 		.descricao
 		.subject {
-			beforeSave = function(...)
+			__beforeSave = function(...)
 				warning()
 			end;
 		}
@@ -70,7 +109,7 @@ local msgs = {
 
 end
 
-
+--[[-----------------
 
 vf = Face 'ListaDeVeiculos' For 'Veiculo' {
 	.nome 
@@ -85,7 +124,7 @@ vf = Face 'ListaDeVeiculos' For 'Veiculo' {
 	}
 }
 
-
+--]]-----------------
 
 
 for typeName, t in pairs(allTypes) do
