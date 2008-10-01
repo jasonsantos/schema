@@ -1,12 +1,24 @@
 local 
-	global, table, string
-= 		_G, table, string
+	_G, global, table, string
+= 	_G, {}, table, string
 
 local 
-	error, setmetatable, rawget, rawset, print, getfenv, setfenv, typeOf
-= 	error, setmetatable, rawget, rawset, print, getfenv, setfenv, type 
+	error, setmetatable, rawget, rawset, print, getfenv, setfenv, typeOf, assert
+= 	error, setmetatable, rawget, rawset, print, getfenv, setfenv, type  , assert
 
 module"schema"
+
+-- Schema Repositories
+local allSchemas = {}
+local lastSchema = {}
+
+--- export
+-- exports the sugar api to the global environment 
+function export(t) 
+	local g = t or _G
+	table.foreach(global, function(k,v) g[k] = v end)
+end
+
 
 --- setproperty
 -- safely sets a value to a property 
@@ -54,8 +66,10 @@ global['Type'] = function(typeName)
 	local type = {
 		['.type'] = type;
 		['.typeName'] = typeName;
-		['.tableName'] = typeName;
+		['.attributes'] = {}; -- ????
 	}
+	
+	print('.lastSchema', getfenv(2)['.lastSchema'])
 	
 	local lastCall = ''
 	local lastField = ''
@@ -82,6 +96,14 @@ global['Type'] = function(typeName)
 		end;
 		
 		__call = function(fn, argument, ...)
+			print('called ', typeOf(fn), fn)
+			if typeOf(fn)=='table' then
+				table.foreach(fn, function(...) print(' >', ...) end)
+			end
+			print('called with argument', typeOf(argument), argument)
+			if typeOf(argument)=='table' then
+				table.foreach(argument, function(...) print(' >', ...) end)
+			end
 			print('called (from type): '.. lastCall .. ' for field ' .. lastField  , ...)
 			
 			local firstChar = string.sub(lastCall, 1, 1)
@@ -123,10 +145,53 @@ end
 
 global['Schema'] = function(schemaName)
 	-- TODO: ???
-	return setmetatable(global, {  
-		__call = function(schema, schemaTable)
-			return schemaTable
+	allSchemas[schemaName] = allSchemas[schemaName] or {
+		['.name'] = schemaName;
+		['.schema'] = allSchemas[schemaName];
+		['.types'] = {};
+		['.lock'] = 0;
+	}
+	
+	print('.lastSchema', getfenv(2)['.lastSchema'])
+	getfenv(2)['.lastSchema'] = schemaName
+	print('.lastSchema', getfenv(2)['.lastSchema'])
+	
+	return setmetatable(allSchemas[schemaName], {  
+		__call = function(_, schemaTable)
+			
+			
+	-- locking mechanism to avoid concurrent updates on a schema
+	
+		allSchemas[schemaName]['.lock'] = (allSchemas[schemaName]['.lock'] or 0) + 1 
+		if allSchemas[schemaName]['.lock'] ~= 1 then
+			allSchemas[schemaName]['.lock'] = (allSchemas[schemaName]['.lock'] or 0) - 1 
+			-- TODO: when adding thread support, add a sleep counter for retry 
+			error("Schema '" .. tostring(schemaName) .. "' is locked")
+		end
+		
+		print('.lastSchema', getfenv(2)['.lastSchema'])
+		
+		print('Schema( .lock', allSchemas[schemaName]['.lock'])
+		
+			table.foreach(schemaTable, function(_, type)
+				local typeName = type['.typeName']
+				allSchemas[schemaName]['.types'] = allSchemas[schemaName]['.types'] or {}
+				
+				allSchemas[schemaName]['.types'][ typeName ] = type  -- TODO: avoid complete replace of types (allow extension)
+				
+				type['.schema'] = allSchemas[schemaName] -- TODO: allow types to be declared in more than one schema
+			end)
+			
+			-- unlocking after all changes were made
+			allSchemas[schemaName]['.lock'] = (allSchemas[schemaName]['.lock'] or 0) - 1 
+		print('.lastSchema', getfenv(2)['.lastSchema'])
+		print('Schema).lock', allSchemas[schemaName]['.lock'])
+			
+			assert(allSchemas[schemaName]['.lock'] >= 0, 'Unexpected error on Schema locking mechanism')
+			
+			return allSchemas[schemaName]
 		end
 	})
 end
+
 return global['Schema']

@@ -1,8 +1,8 @@
-package.path = [[;;./net.luaforge.loft/source/lua/5.1/?.lua;./net.luaforge.loft/source/lua/5.1/?/init.lua;]]
-
 require "schema"
 
-local allTypes = Schema 'Cli' {
+schema.export() -- export global functions to this file
+
+Schema 'Cli' {
 	
 	--[[
 	Data 'TipoDocumento' {
@@ -10,16 +10,18 @@ local allTypes = Schema 'Cli' {
 	 	RG = { nome = "Identidadade", description="Registro Geral" },
 	};
 	
-	Data 'Estado' {
+	Data 'Estado' {				  -- 
 		{id=1,name='Novo'}, 
 		{id=2,name='Criado'}, 
 		{id=3,name='Alterado'}
 	};
 	--]]
 	
+	Type 'Logic';				  -- minimal type
+
 	Type 'Endereco'
-		. rua
-		. numero
+		. rua'Rua'				  -- alias
+		. numero'Número':Number() -- primitive type
 		. complemento
 		. bairro
 		. cidade
@@ -28,9 +30,23 @@ local allTypes = Schema 'Cli' {
 	Type 'PessoaFisica'
 		. nome
 		. endereco
-		. telefone;
+		. telefone
+		. livesHere : Logic(); -- user defined type (implicit association)
 	
 	--[[
+
+	-- TODO: schema declaration engine (OK)
+	-- TODO: locking mechanism (OK)
+	-- TODO: user declared types as prototypes for fields
+	-- TODO: default types declared with the same syntax as user declared types
+	-- TODO: additional attributes to type
+	-- TODO: additional attributes to fields
+	-- TODO: interface for querying attributes
+	-- TODO: structures for storing and retrieving values
+	-- TODO: structures for declaring methods/behaviors/events/validations
+    -- TODO: subtypes declared inside field declaration
+
+
 	Type 'Cliente' {tableName='tbCliente', databaseName='teste'}
 		. nome'Nome'{required=true}
 		. endereco
@@ -71,7 +87,13 @@ local allTypes = Schema 'Cli' {
 	--]]
 }
 
-local newsTypes = Schema 'Newsletter' {
+
+
+table.foreach(Schema'Cli', print)
+
+--[====[
+
+Schema 'Newsletter' {
 	Type 'Grupo'
 		.nm_grupo "Nome";
 	
@@ -106,3 +128,5 @@ for typeName, t in pairs(newsTypes) do
 	end)
 	print'---------------------------'
 end
+
+]====]
