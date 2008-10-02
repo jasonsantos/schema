@@ -143,6 +143,26 @@ global['Type'] = function(typeName)
 	})
 end
 
+-- TODO: List Operations on the filters module
+-------------------------------------------------------------
+
+local _listOperations = {
+	
+}
+
+local _schemaOperations = {
+	types = function(sch)
+		return setmetatable(sch['.types'], {
+			
+		})
+	end;
+	type = function(sch, key)
+		return sch['.types'][key]
+	end;
+
+}
+-------------------------------------------------------------
+
 global['Schema'] = function(schemaName)
 	-- TODO: ???
 	allSchemas[schemaName] = allSchemas[schemaName] or {
@@ -152,27 +172,42 @@ global['Schema'] = function(schemaName)
 		['.lock'] = 0;
 	}
 	
-	print('.lastSchema', getfenv(2)['.lastSchema'])
+	--print('.lastSchema', getfenv(2)['.lastSchema'])
 	getfenv(2)['.lastSchema'] = schemaName
-	print('.lastSchema', getfenv(2)['.lastSchema'])
+	--print('.lastSchema', getfenv(2)['.lastSchema'])
 	
-	return setmetatable(allSchemas[schemaName], {  
+	allSchemas[schemaName] = setmetatable(allSchemas[schemaName], {
+		
+		__index = function(_, key)
+			if _schemaOperations[key] and typeOf(_schemaOperations[key])=='function' then
+				return _schemaOperations[key](_, key)
+			else
+				return _schemaOperations[key]
+			end 
+		end;
+		
 		__call = function(_, schemaTable)
 			
+			if not schemaTable then
+				return allSchemas[schemaName]['.types']
+			elseif typeOf(schemaTable) == 'string' then
+				-- it is a typeName 
+				return allSchemas[schemaName]['.types'][schemaTable]
+			end
 			
-	-- locking mechanism to avoid concurrent updates on a schema
-	
-		allSchemas[schemaName]['.lock'] = (allSchemas[schemaName]['.lock'] or 0) + 1 
-		if allSchemas[schemaName]['.lock'] ~= 1 then
-			allSchemas[schemaName]['.lock'] = (allSchemas[schemaName]['.lock'] or 0) - 1 
-			-- TODO: when adding thread support, add a sleep counter for retry 
-			error("Schema '" .. tostring(schemaName) .. "' is locked")
-		end
+			-- locking mechanism to avoid concurrent updates on a schema
 		
-		print('.lastSchema', getfenv(2)['.lastSchema'])
-		
-		print('Schema( .lock', allSchemas[schemaName]['.lock'])
-		
+			allSchemas[schemaName]['.lock'] = (allSchemas[schemaName]['.lock'] or 0) + 1 
+			if allSchemas[schemaName]['.lock'] ~= 1 then
+				allSchemas[schemaName]['.lock'] = (allSchemas[schemaName]['.lock'] or 0) - 1 
+				-- TODO: when adding thread support, add a sleep counter for retry 
+				error("Schema '" .. tostring(schemaName) .. "' is locked")
+			end
+			
+			--print('.lastSchema', getfenv(2)['.lastSchema'])
+			
+			--print('Schema( .lock', allSchemas[schemaName]['.lock'])
+			
 			table.foreach(schemaTable, function(_, type)
 				local typeName = type['.typeName']
 				allSchemas[schemaName]['.types'] = allSchemas[schemaName]['.types'] or {}
@@ -184,14 +219,16 @@ global['Schema'] = function(schemaName)
 			
 			-- unlocking after all changes were made
 			allSchemas[schemaName]['.lock'] = (allSchemas[schemaName]['.lock'] or 0) - 1 
-		print('.lastSchema', getfenv(2)['.lastSchema'])
-		print('Schema).lock', allSchemas[schemaName]['.lock'])
+			--print('.lastSchema', getfenv(2)['.lastSchema'])
+			--print('Schema).lock', allSchemas[schemaName]['.lock'])
 			
 			assert(allSchemas[schemaName]['.lock'] >= 0, 'Unexpected error on Schema locking mechanism')
 			
-			return allSchemas[schemaName]
+			return allSchemas[schemaName]['.types']
 		end
 	})
+	
+	return allSchemas[schemaName]
 end
 
 return global['Schema']

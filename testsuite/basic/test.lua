@@ -42,6 +42,8 @@ Schema 'Cli' {
 	-- TODO: additional attributes to type
 	-- TODO: additional attributes to fields
 	-- TODO: interface for querying attributes
+		--t = newsTypes['Veiculo'].fields().names()
+		--t = newsTypes['Veiculo'].fields().types()
 	-- TODO: structures for storing and retrieving values
 	-- TODO: structures for declaring methods/behaviors/events/validations
     -- TODO: subtypes declared inside field declaration
@@ -88,8 +90,9 @@ Schema 'Cli' {
 }
 
 
-
-table.foreach(Schema'Cli', print)
+local cliTypes = Schema'Cli'.types
+print(cliTypes, '<<<')
+table.foreach(cliTypes, print)
 
 --[====[
 
@@ -110,23 +113,28 @@ Schema 'Newsletter' {
 --		.groups : Collection(Type'Grupo');		
 }
 
---t = newsTypes['Veiculo'].fields().names()
---t = newsTypes['Veiculo'].fields().types()
 
 
-print("\n\n\n\n")
-for typeName, t in pairs(newsTypes) do
-	print'---------------------------'
-	print(t['.typeName'])
-	print'---------------------------'
-	table.foreach(t['.fields'], function(_,f)
-		print('   -- ' .. _, type(f))
-		table.foreach(f, function(k,v)
-			print('    . ' .. k, v)		
-		end)
-
-	end)
-	print'---------------------------'
-end
 
 ]====]
+
+
+
+print("\n\n\n=====Transversing the Schema======\n")
+for typeName, t in pairs(cliTypes) do
+	print'---------------------------'
+	print('[typeName]', typeName, t, type(t)=='table' and t['.typeName'])
+	print'---------------------------'
+	
+	if type(t)=='table' and t['.fields'] then
+	
+		table.foreach(t['.fields'], function(_,f)
+			print('   -- ' .. _, type(f))
+			table.foreach(f, function(k,v)
+				print('    . ' .. k, v)		
+			end)
+		
+		end)
+		print'---------------------------'
+	end
+end
