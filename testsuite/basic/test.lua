@@ -41,7 +41,7 @@ Schema 'Cli' {
 	-- TODO: default types declared with the same syntax as user declared types
 	-- TODO: additional attributes to type
 	-- TODO: additional attributes to fields
-	-- TODO: interface for querying attributes
+	-- TODO: interface for querying attributes using the list module
 		--t = newsTypes['Veiculo'].fields().names()
 		--t = newsTypes['Veiculo'].fields().types()
 	-- TODO: structures for storing and retrieving values
@@ -138,3 +138,5 @@ for typeName, t in pairs(cliTypes) do
 		print'---------------------------'
 	end
 end
+
+

@@ -1,8 +1,9 @@
-local filters = require'schema.filters'
+local _ = require'schema.list'
 
-a = {1, 2, 3, 4, 5 , 6, 7, 'attention', 'gestalt!', {}, {12}, {name='Jason', age='34'}, {name='Roger', age='32'}, {name='Amanda', age='56'},  }
+local a = {1, 2, 3, 4, 5 , 6, 7, 'attention', 'gestalt!', {}, {12}, {name='Jason', age='34'}, {name='Roger', age='32', aa=1}, {name='Amanda', age='56'},  }
+local s
 
-filters.enable(a)
+_.enable(a)
 
 print'---'
 local t = a.strings()
@@ -20,7 +21,7 @@ table.foreach(a.tables(), print)
 print'---'
 table.foreach(a.numbers(), print)
 
-filters.addFilter('contains', function(k,v, word) 
+_.addFilter('contains', function(k,v,fd,word) 
 	if type(word) ~= 'string' then error("expression must be of type 'string'", 4) end
 	return type(v) == 'string' and (string.find(v, word) and v) 
 end)
@@ -32,4 +33,15 @@ print'---'
 table.foreach(a.attribute'age', print)
 
 print'---'
-table.foreach(a.with{name='Roger'}, print)
+table.foreach(a.with{name='Roger'}.ages().pack(), print)
+
+print'---'
+table.foreach(a.ages(), print)
+
+print'---'
+table.foreach(a.ages().pack(), print)
+
+
+print'---'
+table.foreach(a.aas().pack(), print)
+

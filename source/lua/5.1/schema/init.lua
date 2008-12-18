@@ -19,6 +19,87 @@ function export(t)
 	table.foreach(global, function(k,v) g[k] = v end)
 end
 
+--- createElement
+-- creates prototype elements
+local function createElement(context, name, type, alternativeNames)
+	local prototypeTag = alternativeNames and alternativeNames.prototype or type or 'prototype'
+	local nameTag = alternativeNames and alternativeNames.name or '.' .. prototypeTag .. 'Name'
+	local selfTag = alternativeNames and alternativeNames.self or '.' .. prototypeTag
+	local contentsTag = alternativeNames and alternativeNames.contents or '.contents' 
+
+	local element = {
+		['.lock'] = 0,
+		['.prototype'] = prototypeTag,
+		['.' .. prototypeTag] = type,
+		[nameTag] = name,
+		['.context'] = typeOf(context)=='string' and context or (context['.index'] and context['.index']['.']),
+		['.index'] = {},
+		['.attributes'] = {},
+		[contentsTag]={}
+	}
+	
+	element[selfTag] = element
+	
+	local indexName = element['.context'] .. "." .. name
+	element['.index']['.'] = indexName 
+	local lastContext = ""
+	local addContext 
+	addContext = function(rest)
+		if rest and rest~="" then
+			lastContext = string.sub(indexName, 1, -2-string.len(rest))
+			element['.index'][lastContext]=rest
+			string.gsub(rest, "[^.]+[.]?(.*)", addContext)
+		end
+	end
+	string.gsub(indexName,"[^.]+[.]?(.*)", addContext)
+	
+	local mt 
+	mt = {
+		__index = function(o, idx)
+			return rawget( rawget(o, '.attributes'), idx ) or rawget(o, idx)
+		end,
+		__newindex = function(o, idx, v)
+			return rawset( rawget(o, '.attributes'), idx , v)
+		end,
+		
+		__lock=function(o)
+			local lock = _(o,'.lock',0)
+			rawset(o,'.lock',lock+1)
+			
+			if _(o,'.lock') ~= 1 then
+				rawset(o,'.lock', lock-1) 
+				-- TODO: when adding thread support, add a sleep counter for retry
+				local prototype = o['.prototype'] 
+				error(prototype .. " '" .. tostring(o['.' .. prototype .. 'Name']) .. "' is locked")
+			end
+		end
+		
+		__unlock=function(o)
+			local lock = _(o,'.lock',0)
+			rawset(o,'.lock',lock-1)
+			
+			assert(_(o,'.lock') >= 0, 'Unexpected error on locking mechanism')
+		end
+		
+		__fillContents=function(o, contents)
+			local mycontents = _(o, contentsTag)
+			mt.__lock(o)
+			for key, value in pairs(contents) do
+				if typeOf(key)=='number' then
+					table.insert(mycontents, value)
+				elseif typeOf(key)=='string' then
+					o[key]=value -- TODO: avoid complete replace of contents (allow extension)
+				end
+			end
+			mt.__unlock(o)
+		end,
+		__call = function(o, contents)  mt.__fillContents(o, contents) end
+	}
+	
+	return setmetatable(element, mt)
+end
+
+
 
 --- setproperty
 -- safely sets a value to a property 
@@ -36,15 +117,7 @@ end
 --- Field
 -- creates or returns a field
 local Field = function(fieldName, type)
-	local field = {
-		['.fieldName'] = fieldName;
-	}
-	
-	local methods = {
-		addProperty = function(field, propertyName, value)
-			field[propertyName] = value
-		end;
-	}
+	local field = createElement(type, fieldName, 'field')
 	
 	return setmetatable({}, {
 		__index = function(field, key)
@@ -63,17 +136,15 @@ end
 --- Função de controle para os tipos.. deve retornar um tipo 
 global['Type'] = function(typeName)
 	print('------------ type ' .. typeName .. ' --------------')
-	local type = {
-		['.type'] = type;
-		['.typeName'] = typeName;
-		['.attributes'] = {}; -- ????
-	}
+	local lastSchema = getfenv(2)['.lastSchema']
+	local type = createElement(lastSchema, typeName, 'type')
 	
-	print('.lastSchema', getfenv(2)['.lastSchema'])
+	print('.lastSchema', lastSchema)
 	
 	local lastCall = ''
 	local lastField = ''
 	
+	-- metatable to create types
 	return setmetatable(type, {
 		__index = function(type, fieldName)
 			 print('indexed:' .. fieldName) 
@@ -143,90 +214,34 @@ global['Type'] = function(typeName)
 	})
 end
 
--- TODO: List Operations on the filters module
--------------------------------------------------------------
-
-local _listOperations = {
-	
-}
-
-local _schemaOperations = {
-	types = function(sch)
-		return setmetatable(sch['.types'], {
-			
-		})
-	end;
-	type = function(sch, key)
-		return sch['.types'][key]
-	end;
-
-}
 -------------------------------------------------------------
 
 global['Schema'] = function(schemaName)
-	-- TODO: ???
-	allSchemas[schemaName] = allSchemas[schemaName] or {
-		['.name'] = schemaName;
-		['.schema'] = allSchemas[schemaName];
-		['.types'] = {};
-		['.lock'] = 0;
-	}
+	local lastSchema = getfenv(2)['.lastSchema']
+	
+	
+	-- TODO: obter o contexto atual
+	-- procurar pelo índice
+	-- criar função pra encontrar
+	
+	allSchemas[schemaName] = allSchemas[schemaName] or createElement(lastSchema, schemaName, 'schema')
 	
 	--print('.lastSchema', getfenv(2)['.lastSchema'])
 	getfenv(2)['.lastSchema'] = schemaName
 	--print('.lastSchema', getfenv(2)['.lastSchema'])
 	
-	allSchemas[schemaName] = setmetatable(allSchemas[schemaName], {
-		
-		__index = function(_, key)
-			if _schemaOperations[key] and typeOf(_schemaOperations[key])=='function' then
-				return _schemaOperations[key](_, key)
-			else
-				return _schemaOperations[key]
-			end 
-		end;
-		
-		__call = function(_, schemaTable)
-			
-			if not schemaTable then
-				return allSchemas[schemaName]['.types']
-			elseif typeOf(schemaTable) == 'string' then
-				-- it is a typeName 
-				return allSchemas[schemaName]['.types'][schemaTable]
-			end
-			
-			-- locking mechanism to avoid concurrent updates on a schema
-		
-			allSchemas[schemaName]['.lock'] = (allSchemas[schemaName]['.lock'] or 0) + 1 
-			if allSchemas[schemaName]['.lock'] ~= 1 then
-				allSchemas[schemaName]['.lock'] = (allSchemas[schemaName]['.lock'] or 0) - 1 
-				-- TODO: when adding thread support, add a sleep counter for retry 
-				error("Schema '" .. tostring(schemaName) .. "' is locked")
-			end
-			
-			--print('.lastSchema', getfenv(2)['.lastSchema'])
-			
-			--print('Schema( .lock', allSchemas[schemaName]['.lock'])
-			
-			table.foreach(schemaTable, function(_, type)
-				local typeName = type['.typeName']
-				allSchemas[schemaName]['.types'] = allSchemas[schemaName]['.types'] or {}
-				
-				allSchemas[schemaName]['.types'][ typeName ] = type  -- TODO: avoid complete replace of types (allow extension)
-				
-				type['.schema'] = allSchemas[schemaName] -- TODO: allow types to be declared in more than one schema
-			end)
-			
-			-- unlocking after all changes were made
-			allSchemas[schemaName]['.lock'] = (allSchemas[schemaName]['.lock'] or 0) - 1 
-			--print('.lastSchema', getfenv(2)['.lastSchema'])
-			--print('Schema).lock', allSchemas[schemaName]['.lock'])
-			
-			assert(allSchemas[schemaName]['.lock'] >= 0, 'Unexpected error on Schema locking mechanism')
-			
-			return allSchemas[schemaName]['.types']
+	getmetatable(allSchemas[schemaName]).__call = function(_, schemaTable)
+		if not schemaTable then
+			return allSchemas[schemaName]['.contents']
+		elseif typeOf(schemaTable) == 'string' then
+			-- it is a typeName 
+			return allSchemas[schemaName]['.contents'][schemaTable]
 		end
-	})
+		
+		getmetatable(allSchemas[schemaName]).__fillContents(_, schemaTable)
+		
+		return allSchemas[schemaName]
+	end
 	
 	return allSchemas[schemaName]
 end
