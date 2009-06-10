@@ -1,3 +1,4 @@
+require'luarocks.require'
 require "schema"
 
 schema.export() -- export global functions to this file
@@ -90,7 +91,7 @@ Schema 'Cli' {
 }
 
 
-local cliTypes = Schema'Cli'.types
+local cliTypes = Schema'Cli'()
 print(cliTypes, '<<<')
 table.foreach(cliTypes, print)
 
@@ -120,23 +121,5 @@ Schema 'Newsletter' {
 
 
 
-print("\n\n\n=====Transversing the Schema======\n")
-for typeName, t in pairs(cliTypes) do
-	print'---------------------------'
-	print('[typeName]', typeName, t, type(t)=='table' and t['.typeName'])
-	print'---------------------------'
-	
-	if type(t)=='table' and t['.fields'] then
-	
-		table.foreach(t['.fields'], function(_,f)
-			print('   -- ' .. _, type(f))
-			table.foreach(f, function(k,v)
-				print('    . ' .. k, v)		
-			end)
-		
-		end)
-		print'---------------------------'
-	end
-end
 
 
