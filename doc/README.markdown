@@ -18,8 +18,8 @@ The client engine usually represents your application, a schema-enabled Lua ORM
 written specially to use the data table that results from the data schema
 declaration.
 
-The declaration uses a Lua-based DSL to define the _data schema_, its _entities_
-and their _fields_.
+The declaration uses a Lua-based DSL to define the **data schema**, its **entities**
+and their **fields**.
 
 Schema offers a set of predefined types for fields, but is completely
 extensible: when it doesn't understand a field type the type name itself is
@@ -57,10 +57,10 @@ Data schemas will tipically have three fields on an entity declaration:
 Aspects are treated by the client engine -- schema doesn't process them in any
 way during declaration.
 * *fields* - define a list of field declarations. They usually have the format:
-    <fieldname> = <fieldtype> ([parameters])
+    <*fieldname*> = <*fieldtype*> ([*parameters*])
 
 * *handlers* - define a list of handler declarations in the format
-    <handlernames> = <function>
+    <*handlernames*> = <*function*>
 
 Handler function signatures can vary widely depending on the underlying client
 engine, the type of event or other factors.
@@ -74,34 +74,34 @@ Every field type can produce a number of event hooks.
 
 The predefined field types are:
 
-*belongs_to(entity_name)* - the "one" entity used in a one to many association
+**belongs_to(entity_name)** - the "one" entity used in a one to many association
 
-*boolean* - a boolean value
+**boolean** - a boolean value
 
-*date* - a date represents a timestamp equivalent to 12:00PM in the given day
+**date** - a date represents a timestamp equivalent to 12:00PM in the given day
 
-*has_and_belongs(entity_name)* the collection of "many" entities in a many to
+**has_and_belongs(entity_name)** the collection of "many" entities in a many to
 many association
 
-*has_many(entity_name)* - the collection of "many" entities in a one to many
+**has_many(entity_name)** - the collection of "many" entities in a one to many
 association
 
-*has_one(entity_name)* - the other entity in a one to one association
+**has_one(entity_name)** - the other entity in a one to one association
 
-*integer([maximum_size])* an integer number with an optional maximum size of
+**integer([maximum_size])** an integer number with an optional maximum size of
 digits
 
-*key* - a primary key for the entity
+**key** - a primary key for the entity
 
-*long_text ([maximum_size])* - a long string with an optional maximum size
+**long_text ([maximum_size])** - a long string with an optional maximum size
 
-*number* - a floating point number
+**number** - a floating point number
 
-*reference* - a reference to a multi valored field
+**reference** - a reference to a multi valored field
 
-*text([maximum_size])* - a short string with an optional maximum size
+**text([maximum_size])** - a short string with an optional maximum size
 
-*timestamp* - the date and/or time at which a certain event occurred.
+**timestamp** - the date and/or time at which a certain event occurred.
 
 ###Handlers
 
