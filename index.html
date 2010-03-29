@@ -1,0 +1,118 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+	<title>jasonsantos/schema @ GitHub</title>
+	
+	<style type="text/css">
+		body {
+  		margin-top: 1.0em;
+  		background-color: #186fdc;
+		  font-family: "Helvetica,Arial,FreeSans";
+  		color: #ffffff;
+    }
+    #container {
+      margin: 0 auto;
+      width: 700px;
+    }
+		h1 { font-size: 3.8em; color: #e79023; margin-bottom: 3px; }
+		h1 .small { font-size: 0.4em; }
+		h1 a { text-decoration: none }
+		h2 { font-size: 1.5em; color: #e79023; }
+    h3 { text-align: center; color: #e79023; }
+    a { color: #e79023; }
+    .description { font-size: 1.2em; margin-bottom: 30px; margin-top: 30px; font-style: italic;}
+    .download { float: right; }
+		pre { background: #000; color: #fff; padding: 15px;}
+    hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
+    .footer { text-align:center; padding-top:30px; font-style: italic; }
+	</style>
+	
+</head>
+
+<body>
+  <a href="http://github.com/jasonsantos/schema"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
+
+  <div id="container">
+
+    <div class="download">
+      <a href="http://github.com/jasonsantos/schema/zipball/master">
+        <img border="0" width="90" src="http://github.com/images/modules/download/zip.png"></a>
+      <a href="http://github.com/jasonsantos/schema/tarball/master">
+        <img border="0" width="90" src="http://github.com/images/modules/download/tar.png"></a>
+    </div>
+
+    <h1><a href="http://github.com/jasonsantos/schema">schema</a>
+      <span class="small">by <a href="http://github.com/jasonsantos">jasonsantos</a></span></h1>
+
+    <div class="description">
+      Schema is a module that allows one to declare the structure of Entities for ORMs and Form generators.
+    </div>
+
+    <p>Schema
+------
+
+Schema is a module that allows the declaration of data structures composed of
+Entities and Fields. Its primary use is to define the model for ORMs and Form
+generators, but it can be used to declare any such structure.
+
+Schema allows the definition of a *data schema* in an agnostic way. The actual
+physical representation of the data schema isn't treated by the module, and is
+supposed.to be used by a different engine, that we are going to call the
+*client engine*.
+
+A data schema can be used in many ways, but the most common is to represent a
+set of tables in a database application.
+
+The client engine usually represents your application, a schema-enabled Lua ORM
+(like Orbit.model or Loft) or any other form of data persitence that has been
+written specially to use the data table that results from the data schema
+declaration.
+
+The declaration uses a Lua-based DSL to define the **data schema**, its **entities**
+and their **fields**.
+
+Schema offers a set of predefined types for fields, but is completely
+extensible: when it doesn't understand a field type the type name itself is
+stored in the schema, so it can be treated by the underlying persistence engine.</p><h2>Dependencies</h2>
+<p>Schema has no external dependencies.</p>
+<h2>Install</h2>
+<p>To install schema using LuaRocks, type
+  luarocks install schema
+
+Alternatively, you can simply copy the file 'schema.lua' into your lua path.</p>
+<h2>License</h2>
+<p>Schema is free software: it can be used for both academic and commercial purposes at absolutely no cost. There are no royalties or GNU-like "copyleft" restrictions. Schema qualifies as Open Source software. Its licenses are compatible with GPL. Schema is not in the public domain and the developers keep its copyright. The legal details are below.
+
+The spirit of the license is that you are free to use Schema for any purpose at no cost without having to ask us. The only requirement is that if you do use Schema, then you should give us credit by including the appropriate copyright notice somewhere in your product or its documentation.
+
+The Schema library is designed and implemented by a team at PUC and Fabrica Digital. The implementation is not derived from licensed software.</p>
+<h2>Authors</h2>
+<p>Luís Eduardo Jason Santos, Fabio Mascarenhas</p>
+<h2>Contact</h2>
+<p>Luís Eduardo Jason Santos (jasonsantos@gmail.com)<br/>      </p>
+
+
+    <h2>Download</h2>
+    <p>
+      You can download this project in either
+      <a href="http://github.com/jasonsantos/schema/zipball/master">zip</a> or
+      <a href="http://github.com/jasonsantos/schema/tarball/master">tar</a> formats.
+    </p>
+    <p>You can also clone the project with <a href="http://git-scm.com">Git</a>
+      by running:
+      <pre>$ git clone git://github.com/jasonsantos/schema</pre>
+    </p>
+
+    <div class="footer">
+      get the source code on GitHub : <a href="http://github.com/jasonsantos/schema">jasonsantos/schema</a>
+    </div>
+
+  </div>
+
+  
+</body>
+</html>
