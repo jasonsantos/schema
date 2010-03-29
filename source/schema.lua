@@ -94,6 +94,7 @@ local function fill_entity(schema, alias, entity)
     entity.table_name = entity.table_name or ((schema.table_prefix or "") .. alias)
   end
   for f_alias, field in pairs(entity.fields) do
+    field.name = f_alias
     if primitive_types[field.type] and not primitive_types[field.type].virtual then
       field.column_name = field.column_name or ((schema.column_prefix or "") ..
 					        (entity.column_prefix or "") .. 
