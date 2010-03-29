@@ -1,7 +1,7 @@
 package = "schema"
-version = "1.0.0"
+version = "1.0.0-1"
 source = {
-  url = "git://github.com/jasonsantos/schema.git",
+  url = "http://github.com/downloads/jasonsantos/schema/schema-1.0.0.tar.gz",
 }
 description = {
   summary = "Schema",
